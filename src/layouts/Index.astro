@@ -1,0 +1,58 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import type { Locale } from "../i18n";
+import Layout from "./Layout.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const pages = await getCollection("blog");
+
+  const paths = pages.map((page) => {
+    const [lang, ...slug] = page.slug.split("/");
+
+    return { params: { lang, slug: slug.join("/") || undefined }, props: page };
+  });
+
+  return paths;
+}
+
+const locale = Astro.currentLocale as Locale;
+
+const pages = await getStaticPaths();
+
+const currentLocalePages = pages.filter((page) => page.params.lang === locale);
+---
+
+<Layout>
+  <div class="mt-[40px]">
+    {
+      currentLocalePages.map((page) => {
+        const postText = page.props.body;
+
+        // Get first paragraph of entire blog's text
+        const match = postText.match(
+          // Any line which is a title. For example: '  # Hello Title
+          // ... and (.+) is for the actual paragraph.
+          /(^\s?[#]+.*\n+)+(.+)/,
+        );
+
+        const paragraph = match !== null ? match[2] : undefined;
+
+        return (
+          <a
+            hreflang={locale}
+            href={getRelativeLocaleUrl(locale, `/posts/${page.params.slug}`)}
+          >
+            <div class="mb-[52px]">
+              <div class="text-fg-400 font-extrabold text-2xl mb-3">
+                {page.props.data.title}
+              </div>
+              <div class="text-fg-200 text-sm mb-4">{page.props.data.date}</div>
+              <div>{paragraph}</div>
+            </div>
+          </a>
+        );
+      })
+    }
+  </div>
+</Layout>

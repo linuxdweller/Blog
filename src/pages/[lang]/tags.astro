@@ -1,0 +1,102 @@
+---
+import { getCollection } from "astro:content";
+import { getRelativeLocaleUrl } from "astro:i18n";
+
+import { Locales, useTranslations, type Locale } from "../../i18n";
+import Layout from "../../layouts/Layout.astro";
+
+const locale = Astro.currentLocale as Locale;
+
+export async function getStaticPaths() {
+  const locales = Locales;
+  const posts = await getCollection("blog");
+
+  const postsPerLang = new Map<
+    Locale,
+    {
+      title: string;
+      tag: (typeof posts)[number]["data"]["tag"];
+    }[]
+  >();
+
+  for (const post of posts) {
+    const [lang, ...slug] = post.slug.split("/");
+
+    const langPosts = postsPerLang.get(lang as Locale);
+
+    if (!langPosts) {
+      postsPerLang.set(lang as Locale, [
+        {
+          title: post.data.title,
+          tag: post.data.tag,
+        },
+      ]);
+    } else {
+      langPosts.push({
+        title: post.data.title,
+        tag: post.data.tag,
+      });
+    }
+  }
+
+  return locales.map((locale) => {
+    return {
+      params: {
+        lang: locale,
+      },
+      props: {
+        tags: postsPerLang.get(locale),
+      },
+    };
+  });
+}
+
+const { tags } = Astro.props;
+
+const postCountPerTag = new Map<
+  string,
+  {
+    count: number;
+    displayName: string;
+  }
+>();
+
+if (!tags) {
+  // Should never happen but makes TypeScript happy.
+  return;
+}
+
+for (const { tag } of tags) {
+  const count = postCountPerTag.get(tag.uriName);
+
+  if (!count) {
+    postCountPerTag.set(tag.uriName, {
+      count: 1,
+      displayName: tag.displayName,
+    });
+  } else {
+    count.count += 1;
+  }
+}
+
+const t = useTranslations(locale);
+---
+
+<Layout>
+  <div class="flex flex-col gap-y-[62px] mt-[62px]">
+    {
+      Array.from(postCountPerTag.entries()).map(
+        ([tag, { count, displayName }]) => {
+          return (
+            <a href={getRelativeLocaleUrl(locale, `/tags/${tag}`)}>
+              <div class="font-extrabold text-3xl">{displayName}</div>
+              <div class="text-fg-200 mt-2">
+                {count} {t({ en: "posts", he: "פוסטים" })}
+              </div>
+            </a>
+          );
+        },
+      )
+    }
+  </div>
+</Layout>

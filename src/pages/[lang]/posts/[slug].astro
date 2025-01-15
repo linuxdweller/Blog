@@ -1,0 +1,192 @@
+---
+import { getCollection, render } from "astro:content";
+
+import Layout from "../../../layouts/Layout.astro";
+
+// Source: https://docs.astro.build/en/guides/content-collections/#building-for-static-output-default
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+
+  const posts_ = posts.map((post) => {
+    const [lang, ...slug] = post.slug.split("/");
+
+    return {
+      params: {
+        lang,
+        slug: slug.join("/"),
+      },
+      props: {
+        post,
+      },
+    };
+  });
+
+  return posts_;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Layout>
+  <style is:global>
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+    }
+    h2 {
+      font-size: 36px;
+      font-weight: 800;
+    }
+    h3 {
+      font-size: 30px;
+      font-weight: 700;
+    }
+    h4 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    h5 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    h6 {
+      font-weight: 700;
+    }
+    h1,
+    h2 {
+      margin-block-start: 40px;
+      margin-block-end: 24px;
+    }
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin-block-start: 32px;
+      margin-block-end: 16px;
+    }
+    /*
+     * For example:
+     * Alt-H1
+     * ======
+     * */
+    [id^="alt"] {
+      font-style: italic;
+    }
+    ol,
+    ul {
+      margin-inline-start: 20px;
+    }
+    li {
+      list-style-type: decimal;
+      margin-block: 20px;
+    }
+    li p {
+      margin-block: 16px;
+    }
+    ul li {
+      list-style-type: square;
+      list-style-position: inside;
+    }
+    li input {
+      margin-inline-end: 4px;
+    }
+    p {
+      margin-block: 24px;
+      line-height: 28px;
+    }
+    a {
+      text-decoration: underline;
+    }
+    img {
+      border-radius: 4px;
+      margin-block-start: 24px;
+      margin-block-end: 40px;
+    }
+    pre {
+      border-radius: 4px;
+      padding-inline: 12px;
+      padding-block: 12px;
+      margin-block: 40px;
+    }
+    /* Code should always be rendered ltr */
+    pre {
+      direction: ltr !important;
+    }
+    /* Inline code */
+    p code {
+      color: #f2f1ec;
+      background-color: #7d7d7d;
+      border-radius: 4px;
+      padding-inline: 8px;
+      padding-block: 4px;
+      margin-inline: 2px;
+    }
+    table {
+      margin-block: 40px;
+      width: 100%;
+      border-radius: 8px;
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      background-color: #ecebe4ff;
+    }
+    tr:nth-child(even) > td {
+      background-color: #e6e4dbff;
+    }
+    tr:last-child {
+      td:first-child {
+        border-end-start-radius: 8px;
+      }
+
+      td:last-child {
+        border-end-end-radius: 8px;
+      }
+    }
+    th:first-child {
+      border-start-start-radius: 8px;
+    }
+
+    th:last-child {
+      border-start-end-radius: 8px;
+    }
+    th,
+    td {
+      text-align: start;
+    }
+    th,
+    td {
+      padding-inline: 12px;
+      padding-block: 12px;
+    }
+    blockquote {
+      quotes: "\201C" "\201D" "\2018" "\2019";
+      padding-block-start: 8px;
+      margin-block: 32px;
+    }
+    blockquote::before {
+      color: #878787;
+      content: open-quote;
+      font-size: 6em;
+      line-height: 0.1em;
+      margin-inline-end: 8px;
+      vertical-align: -0.4em;
+    }
+    blockquote p {
+      display: inline;
+      font-size: 24px;
+      font-weight: 600;
+      font-style: italic;
+    }
+    hr {
+      margin-block-start: 48px;
+      margin-block-end: 32px;
+      border-top: 1.5px solid #7d7d7d;
+      border-style: dashed;
+    }
+  </style>
+  <h1>
+    {post.data.title}
+  </h1>
+  <Content />
+</Layout>

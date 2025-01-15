@@ -1,0 +1,124 @@
+---
+import { useTranslations, type Locale } from "../i18n";
+import Select_ from "../components/select/Select.tsx";
+import { getRelativeLocaleUrl } from "astro:i18n";
+
+const locale = Astro.currentLocale as Locale;
+const t = useTranslations(locale);
+
+const isHebrew = locale === "he";
+
+const isTagsPage = Astro.url.pathname.includes("tags");
+
+const hebrewBio = "שלום עולם, שמי עמית.";
+
+const englishBio =
+  "Hey, I am Amit Friedman, a software engineer specialized in Full Stack and DevOps work. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus  aliquam, sapien quis hendrerit varius, dolor est interdum turpis, eget  accumsan mi nunc eu lectus.";
+
+// Convert /en/slug -> slug
+const slug = Astro.url.pathname.split("/").splice(2).join("/");
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- meta attributes source: https://tailwindcss.com/docs/responsive-design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Blog</title>
+  </head>
+  <body class="bg-bg-400 px-5 sm:px-[120px] lg:px-[20%]">
+    <div class="flex flex-col justify-between h-full">
+      <div>
+        <div class="font-extrabold text-3xl mb-[32px] mt-[42px]">
+          {t({ en: "Amit Friedman", he: "עמית פרידמן" })}
+        </div>
+        <div class="pb-5 sm:mt-9 flex justify-between">
+          <div class="flex gap-x-8 items-center">
+            <a
+              href={getRelativeLocaleUrl(locale, "/")}
+              class={`underline text-xl ${!isTagsPage && "font-bold"}`}
+              >{t({ en: "Posts", he: "פוסטים" })}</a
+            >
+            <a
+              href={getRelativeLocaleUrl(locale, "/tags")}
+              class={`underline text-xl ${isTagsPage && "font-bold"}`}
+              >{t({ en: "Tags", he: "קטגוריות" })}</a
+            >
+          </div>
+          <Select_
+            client:only="react"
+            direction={isHebrew ? "rtl" : undefined}
+            value={t({
+              en: isHebrew ? "אנגלית" : "English",
+              he: isHebrew ? "עברית" : "Hebrew",
+            })}
+            options={[
+              {
+                value: isHebrew ? "אנגלית" : "English",
+                href: getRelativeLocaleUrl("en", slug),
+              },
+              {
+                value: isHebrew ? "עברית" : "Hebrew",
+                href: getRelativeLocaleUrl("he", slug),
+              },
+            ]}
+          />
+        </div>
+        <slot />
+      </div>
+      <div class="mt-[100px]">
+        <div class="flex gap-x-5 items-center">
+          <a href="/" class={`underline ${!isTagsPage && "font-bold"}`}
+            >{t({ en: "Posts", he: "פוסטים" })}</a
+          >
+          <a href="/" class={`underline ${isTagsPage && "font-bold"}`}
+            >{t({ en: "Tags", he: "קטגוריות" })}</a
+          >
+        </div>
+
+        <div class="border-t-[#BFBFBF] border-t-[1.5px] border-dashed my-9">
+        </div>
+        <div class="mb-5 flex gap-x-7 items-start">
+          <div>
+            {t({ en: englishBio, he: hebrewBio })}
+          </div>
+          <div class="flex gap-x-4 items-center sm:px-10">
+            <a href="/" class="underline underline-offset"
+              >{t({ en: "Linkedin", he: "לינקדאין" })}</a
+            >
+            <a href="/" class="underline underline-offset"
+              >{t({ en: "GitHub", he: "גיטהאב" })}</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+  * {
+    color: #5b5b5b;
+    direction: {
+      ishebrew?"ltr": "rtl";
+    }
+  }
+  html[lang="he"] {
+    direction: rtl;
+  }
+</style>
+
+<script>
+  import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from "astro:i18n";
+
+  const currentPath = window.location.pathname.split("/").at(-1);
+</script>
