@@ -1,5 +1,4 @@
 import * as Menubar from "@radix-ui/react-menubar";
-import "./Select.css";
 
 interface Props {
   value: string;
