@@ -71,10 +71,14 @@ const slug = Astro.url.pathname.split("/").splice(2).join("/");
       </div>
       <div class="mt-[100px]">
         <div class="flex gap-x-5 items-center">
-          <a href="/" class={`underline ${!isTagsPage && "font-bold"}`}
+          <a
+            href={getRelativeLocaleUrl(locale, "/")}
+            class={`underline ${!isTagsPage && "font-bold"}`}
             >{t({ en: "Posts", he: "פוסטים" })}</a
           >
-          <a href="/" class={`underline ${isTagsPage && "font-bold"}`}
+          <a
+            href={getRelativeLocaleUrl(locale, "/tags")}
+            class={`underline ${isTagsPage && "font-bold"}`}
             >{t({ en: "Tags", he: "קטגוריות" })}</a
           >
         </div>
