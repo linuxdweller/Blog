@@ -1,7 +1,7 @@
 ---
 title: Hello World
 date: "2025-01-09"
-tag: { displayName: "Cofee", uriName: "cofee" }
+tag: { displayName: "Coffee", uriName: "cofee" }
 ---
 
 # Headers

@@ -6,8 +6,8 @@ const blogCollection = defineCollection({
     date: z.string().date(),
     tag: z.strictObject({
       displayName: z.string(),
-      uriName: z.string()
-    })
+      uriName: z.string(),
+    }),
   }),
 });
 

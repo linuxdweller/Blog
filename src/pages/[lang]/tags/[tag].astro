@@ -1,0 +1,67 @@
+---
+import PostList from "../../../components/postsList/PostList";
+import { getCollection } from "astro:content";
+import Layout from "../../../layouts/Layout.astro";
+import type { Locale } from "../../../i18n";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+
+  const locales = Array.from(
+    new Set(posts.map((p) => p.slug.split("/").at(0))),
+  );
+
+  const postsPerLocale = locales.map((locale) => {
+    const localePosts = posts.filter((p) => p.slug.split("/").at(0) === locale);
+
+    const tags = localePosts.map((p) => p.data.tag.uriName);
+
+    return {
+      locale,
+      tags: tags.map((tag) => {
+        return {
+          tag,
+          posts: localePosts.filter((p) => p.data.tag.uriName === tag),
+        };
+      }),
+    };
+  });
+
+  const paths = [];
+
+  for (const localePosts of postsPerLocale) {
+    for (const tag of localePosts.tags) {
+      paths.push({
+        params: {
+          lang: localePosts.locale,
+          tag: tag.tag,
+        },
+        props: {
+          posts: tag.posts,
+        },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const locale = Astro.currentLocale as Locale;
+
+const posts = Astro.props.posts;
+
+const posts_ = posts.map((post) => {
+  const slug = post.slug.split("/").splice(1).join("/");
+
+  return {
+    title: post.data.title,
+    date: post.data.date,
+    slug,
+    tagDisplayName: post.data.tag.displayName,
+  };
+});
+---
+
+<Layout>
+  <PostList posts={posts_} locale={locale} />
+</Layout>
