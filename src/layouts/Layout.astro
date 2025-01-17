@@ -10,10 +10,11 @@ const isHebrew = locale === "he";
 
 const isTagsPage = Astro.url.pathname.includes("tags");
 
-const hebrewBio = "שלום עולם, שמי עמית.";
+const hebrewBio =
+  "אני עמית פרידמן, מהנדס תוכנה מתל אביב. אני מתמחה בייעול וביזור מערכות, ממעבדות קטנות ועד פתרונות לחברות ענק. אני הופך מילות באז וראשי תיבות לתשתיות פרודקשן שאפשר לסמוך עליהן.";
 
 const englishBio =
-  "Hey, I am Amit Friedman, a software engineer specialized in Full Stack and DevOps work. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus  aliquam, sapien quis hendrerit varius, dolor est interdum turpis, eget  accumsan mi nunc eu lectus.";
+  "I'm Amit Friedman, an author and dev from Tel Aviv, Israel. I specialize in application scalability and performance, from small scale to large enterprise deployments. I turn buzzwords and acronyms into reliable production infrastructure.";
 
 // Convert /en/slug -> slug
 const slug = Astro.url.pathname.split("/").splice(2).join("/");
@@ -32,9 +33,9 @@ const slug = Astro.url.pathname.split("/").splice(2).join("/");
   <body class="bg-bg-400 px-5 sm:px-[120px] lg:px-[20%]">
     <div class="flex flex-col justify-between h-full">
       <div>
-        <div class="font-extrabold text-3xl mb-[32px] mt-[42px]">
+        <a href="/" class="block font-extrabold text-2xl mb-[32px] mt-[42px]">
           {t({ en: "Amit Friedman", he: "עמית פרידמן" })}
-        </div>
+        </a>
         <div class="pb-5 sm:mt-9 flex justify-between">
           <div class="flex gap-x-8 items-center">
             <a
@@ -69,7 +70,7 @@ const slug = Astro.url.pathname.split("/").splice(2).join("/");
         </div>
         <slot />
       </div>
-      <div class="mt-[100px]">
+      <div class="mt-[100px] pb-[52px]">
         <div class="flex gap-x-5 items-center">
           <a
             href={getRelativeLocaleUrl(locale, "/")}
@@ -82,14 +83,15 @@ const slug = Astro.url.pathname.split("/").splice(2).join("/");
             >{t({ en: "Tags", he: "קטגוריות" })}</a
           >
         </div>
-
-        <div class="border-t-[#BFBFBF] border-t-[1.5px] border-dashed my-9">
+        <div
+          class="border-t-[#BFBFBF] border-t-[1.5px] border-dashed my-[48px]"
+        >
         </div>
-        <div class="mb-5 flex gap-x-7 items-start">
+        <div class="flex gap-x-[52px] items-start">
           <div>
             {t({ en: englishBio, he: hebrewBio })}
           </div>
-          <div class="flex gap-x-4 items-center sm:px-10">
+          <div class="flex flex-col gap-y-4 items-start sm:px-10">
             <a href="/" class="underline underline-offset"
               >{t({ en: "Linkedin", he: "לינקדאין" })}</a
             >
@@ -120,9 +122,3 @@ const slug = Astro.url.pathname.split("/").splice(2).join("/");
     direction: rtl;
   }
 </style>
-
-<script>
-  import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from "astro:i18n";
-
-  const currentPath = window.location.pathname.split("/").at(-1);
-</script>
