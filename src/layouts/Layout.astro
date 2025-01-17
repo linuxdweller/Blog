@@ -2,6 +2,7 @@
 import { useTranslations, type Locale } from "../i18n";
 import Select_ from "../components/select/Select.tsx";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import "@fontsource-variable/open-sans";
 
 const locale = Astro.currentLocale as Locale;
 const t = useTranslations(locale);
@@ -114,9 +115,7 @@ const slug = Astro.url.pathname.split("/").splice(2).join("/");
   }
   * {
     color: #5b5b5b;
-    direction: {
-      ishebrew?"ltr": "rtl";
-    }
+    font-family: "Open Sans Variable";
   }
   html[lang="he"] {
     direction: rtl;
