@@ -2,6 +2,8 @@
 import { getCollection, render } from "astro:content";
 
 import Layout from "../../../layouts/Layout.astro";
+import { useTranslations, type Locale } from "../../../i18n";
+import { getAbsoluteLocaleUrl } from "astro:i18n";
 
 // Source: https://docs.astro.build/en/guides/content-collections/#building-for-static-output-default
 export async function getStaticPaths() {
@@ -26,9 +28,21 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+const path = post.slug.split("/").splice(1).join("/");
+
+const locale = Astro.currentLocale as Locale;
+
+const t = useTranslations(locale);
 ---
 
-<Layout>
+<Layout
+  openGraph={{
+    title: post.data.title,
+    url: getAbsoluteLocaleUrl(locale, `posts/${path}`),
+    description: post.data.description,
+  }}
+>
   <style is:global>
     h1 {
       font-size: 48px;

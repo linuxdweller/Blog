@@ -1,6 +1,7 @@
 ---
+import { getAbsoluteLocaleUrl } from "astro:i18n";
 import PostList from "../components/postsList/PostList";
-import type { Locale } from "../i18n";
+import { useTranslations, type Locale } from "../i18n";
 import Layout from "./Layout.astro";
 import { getCollection } from "astro:content";
 
@@ -30,8 +31,16 @@ const posts = currentLocalePages.map((page) => {
     tagDisplayName: page.props.data.tag.displayName,
   };
 });
+
+const t = useTranslations(locale);
 ---
 
-<Layout>
+<Layout
+  openGraph={{
+    title: t({ en: "Posts", he: "פוסטים" }),
+    url: getAbsoluteLocaleUrl(locale, "/"),
+    description: t({ en: "List of all posts", he: "רשימת כל הפוסטים" }),
+  }}
+>
   <PostList posts={posts} locale={locale} />
 </Layout>

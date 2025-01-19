@@ -2,6 +2,7 @@
 title: שלום עולם
 date: "2025-01-09"
 tag: { displayName: "קפה", uriName: "cofee" }
+description: "שלום עולם זה התיאור של הפוסט."
 ---
 
 # כותרת H1

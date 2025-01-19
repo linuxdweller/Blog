@@ -4,6 +4,15 @@ import Select_ from "../components/select/Select.tsx";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import "@fontsource-variable/open-sans";
 
+interface Props {
+  openGraph: {
+    title: string;
+    url: string;
+    description: string;
+    image?: string;
+  };
+}
+
 const locale = Astro.currentLocale as Locale;
 const t = useTranslations(locale);
 
@@ -19,6 +28,14 @@ const englishBio =
 
 // Convert /en/slug -> slug
 const slug = Astro.url.pathname.split("/").splice(2).join("/");
+
+const { openGraph } = Astro.props;
+
+const SITE_URL = import.meta.env.SITE;
+
+const defaultOpenGraphImage = "/2x1.png";
+
+const openGraphImage = SITE_URL + (openGraph?.image ?? defaultOpenGraphImage);
 ---
 
 <!doctype html>
@@ -29,7 +46,12 @@ const slug = Astro.url.pathname.split("/").splice(2).join("/");
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Blog</title>
+    <meta property="og:url" content={openGraph.url} />
+    <meta property="og:title" content={openGraph.title} />
+    <meta property="og:description" content={openGraph.description} />
+    <meta property="og:image" content={openGraphImage} />
+    <meta property="og:type" content="article" />
+    <title>Amit Friedman</title>
   </head>
   <body class="bg-bg-400 px-5 sm:px-[120px] lg:px-[20%]">
     <div class="flex flex-col justify-between h-full">

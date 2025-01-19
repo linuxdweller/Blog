@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import { getRelativeLocaleUrl } from "astro:i18n";
+import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from "astro:i18n";
 
 import { Locales, useTranslations, type Locale } from "../../i18n";
 import Layout from "../../layouts/Layout.astro";
@@ -82,7 +82,13 @@ for (const { tag } of tags) {
 const t = useTranslations(locale);
 ---
 
-<Layout>
+<Layout
+  openGraph={{
+    title: "Post Tags",
+    url: getAbsoluteLocaleUrl(locale, "tags"),
+    description: "List of all post tags.",
+  }}
+>
   <div class="flex flex-col gap-y-[62px] mt-[62px]">
     {
       Array.from(postCountPerTag.entries()).map(

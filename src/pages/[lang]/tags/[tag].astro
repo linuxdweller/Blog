@@ -3,6 +3,7 @@ import PostList from "../../../components/postsList/PostList";
 import { getCollection } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
 import type { Locale } from "../../../i18n";
+import { getAbsoluteLocaleUrl } from "astro:i18n";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -60,8 +61,16 @@ const posts_ = posts.map((post) => {
     tagDisplayName: post.data.tag.displayName,
   };
 });
+
+const tag = posts.at(0)?.data.tag;
 ---
 
-<Layout>
+<Layout
+  openGraph={{
+    title: `${tag?.displayName} Posts`,
+    url: getAbsoluteLocaleUrl(locale, `tags/${tag?.uriName}`),
+    description: `Collection of ${tag?.displayName} posts`,
+  }}
+>
   <PostList posts={posts_} locale={locale} />
 </Layout>

@@ -1,5 +1,10 @@
 # i18n Blog
 
+## SEO
+
+1. OpenGraph
+2. LD JSON
+
 ## i18n Requirements
 
 1. A way to show multilangual text based on selected locale (a javascript function for showing the locale's text

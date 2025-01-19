@@ -22,4 +22,5 @@ export default defineConfig({
   experimental: {
     svg: true,
   },
+  site: "https://linuxdweller.com",
 });
