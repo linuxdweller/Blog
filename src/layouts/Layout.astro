@@ -56,7 +56,10 @@ const openGraphImage = SITE_URL + (openGraph?.image ?? defaultOpenGraphImage);
   <body class="bg-bg-400 px-5 sm:px-[120px] lg:px-[20%]">
     <div class="flex flex-col justify-between h-full">
       <div>
-        <a href="/" class="block font-extrabold text-2xl mb-[32px] mt-[42px]">
+        <a
+          href={getRelativeLocaleUrl(locale, "/")}
+          class="block font-extrabold text-2xl mb-[32px] mt-[42px]"
+        >
           {t({ en: "Amit Friedman", he: "עמית פרידמן" })}
         </a>
         <div class="pb-5 sm:mt-9 flex justify-between">
