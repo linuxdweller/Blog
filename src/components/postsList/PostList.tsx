@@ -13,14 +13,14 @@ interface Props {
 
 const PostList = ({ posts, locale }: Props) => {
   return (
-    <div className="mt-[52px]">
+    <div className="mt-[32px]">
       {posts.map((page) => {
         return (
           <a
             hrefLang={locale}
             href={getRelativeLocaleUrl(locale, `/posts/${page.slug}`)}
           >
-            <div className="mb-[52px]">
+            <div className="mb-[42px]">
               <div className="text-fg-400 font-extrabold text-3xl mb-1">
                 {page.title}
               </div>
