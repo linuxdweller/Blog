@@ -8,7 +8,7 @@ description: ""
 [Skip the fuss and see the full configuration.](#the-full-config)
 
 In the past 2 years I've been improving the Neovim config I use everyday as a web
-developer, creating the ultimate Neoim config for working with TypeScript in
+developer, creating the ultimate Neovim config for working with TypeScript in
 Node, React, Angular and Astro projects.
 
 While the ultimate Neovim config doesn't exist, this attempts to be as close as possible.
@@ -322,7 +322,7 @@ require("lazy").setup({
 
 [`telescope.nvim`](https://github.com/nvim-telescope/telescope.nvim) is the predecessor of `folke/snacks.nvim`.
 It has very similar pickers for LSP find references / definitions / type definitions.
-It's downside are that it's fuzzy finder is slower and it's config is slightly more verbose compared to `snacks.nvim`.
+It's downsides are that it's fuzzy finder is slower and it's config is slightly more verbose compared to `snacks.nvim`.
 
 ### conform.nvim
 
@@ -332,4 +332,4 @@ configuring formatting sources is a mere `require` call instead of specifying fo
 ### nvim-lint
 
 [`nvim-lint`](https://github.com/mfussenegger/nvim-lint) is an async linter plugin. Similarly to `conform.nvim`, I prefer
-using `none-ls` for linter diagnostics configure sources is easier and requires less configuration.
+using `none-ls` for linter diagnostics as configuring linters is easier and requires less configuration.
