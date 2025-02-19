@@ -1,21 +1,21 @@
 ---
-title: "TypeScript with NeoVim: The ultimate config guide"
+title: "TypeScript with Neovim: The ultimate config guide"
 date: "2025-07-02"
-tag: { displayName: "neovim", uriName: "neovim" }
+tag: { displayName: "Neovim", uriName: "neovim" }
 description: ""
 ---
 
 [Skip the fuss and see the full configuration.](#the-full-config)
 
-In the past 2 years I've been improving the NeoVim config I use everyday as a web
-developer, creating the ultimate NeoVim config for working with TypeScript in
+In the past 2 years I've been improving the Neovim config I use everyday as a web
+developer, creating the ultimate Neoim config for working with TypeScript in
 Node, React, Angular and Astro projects.
 
-While the ultimate NeoVim config doesn't exist, this attempts to be as close as possible.
+While the ultimate Neovim config doesn't exist, this attempts to be as close as possible.
 Everyone has their own preferences, and this article strives to give you the
 tools to create the ultimate config _for you_.
 
-If you're using NeoVim for web development, you probably need:
+If you're using Neovim for web development, you probably need:
 
 1. Syntax highlighting.
 2. Code completion.
@@ -31,7 +31,7 @@ size to make maintenance easy.
 
 ## Requirements
 
-1. NeoVim `v0.10.4`. I tested this config on `v0.10.4` and this is the version I recommend using with it. Some of the included
+1. Neovim `v0.10.4`. I tested this config on `v0.10.4` and this is the version I recommend using with it. Some of the included
    plugins require `v0.10` or greater.
 2. [folke/lazy.nvim](https://lazy.folke.io/installation) installed and setup.
 
@@ -40,7 +40,7 @@ size to make maintenance easy.
 Code completion is done with [`blink.cmp`](https://github.com/rafamadriz/friendly-snippets). For snippets we
 use [`rafamadriz/friendly-snippets`](https://github.com/rafamadriz/friendly-snippets).
 
-`curl` is required for this plugin to work. If you do not have it installed you will get an error when starting NeoVim.
+`curl` is required for this plugin to work. If you do not have it installed you will get an error when starting Neovim.
 
 ```lua
 {
