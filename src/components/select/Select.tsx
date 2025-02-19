@@ -17,7 +17,7 @@ const Select_ = ({ value, options, direction = "ltr" }: Props) => {
           </Menubar.Trigger>
           <Menubar.Portal>
             <Menubar.Content
-              className="shadow-md rounded-[4px] bg-bg-500"
+              className="shadow-md rounded-[4px] bg-bg-400"
               align="center"
               style={{ direction }}
             >
