@@ -326,10 +326,10 @@ It's downside are that it's fuzzy finder is slower and it's config is slightly m
 
 ### conform.nvim
 
-[`conform.nvim`](https://github.com/stevearc/conform.nvim) is a lightweight formatter plugin. I prefer `none-ls` as
-configuring formatting sources is a mere `require` call instead of specifying a formatter for each filetype.
+[`conform.nvim`](https://github.com/stevearc/conform.nvim) is a lightweight formatter plugin. It is probably the most popular formatter plugin. Still, I prefer using `none-ls` as
+configuring formatting sources is a mere `require` call instead of specifying formatters manually for each filetype.
 
 ### nvim-lint
 
 [`nvim-lint`](https://github.com/mfussenegger/nvim-lint) is an async linter plugin. Similarly to `conform.nvim`, I prefer
-using `none-ls` for linter diagnostics as it is easier to configure sources.
+using `none-ls` for linter diagnostics configure sources is easier and requires less configuration.
