@@ -24,7 +24,7 @@ const hebrewBio =
   "אני עמית פרידמן, מהנדס תוכנה מתל אביב. אני מתמחה בייעול וביזור מערכות, ממעבדות קטנות ועד פתרונות לחברות ענק. אני הופך מילות באז וראשי תיבות לתשתיות פרודקשן שאפשר לסמוך עליהן.";
 
 const englishBio =
-  "I'm Amit Friedman, an author and dev from Tel Aviv, Israel. I specialize in application scalability and performance, from small scale to large enterprise deployments. I turn buzzwords and acronyms into reliable production infrastructure.";
+  "I'm Amit Friedman, an author and dev from Tel Aviv, Israel. I specialize in application scalability and performance, from small scale to large cloud deployments. I turn shopping lists of requirements to robust production infrastructure.";
 
 // Convert /en/slug -> slug
 const slug = Astro.url.pathname.split("/").splice(2).join("/");
@@ -62,7 +62,7 @@ const openGraphImage = SITE_URL + (openGraph?.image ?? defaultOpenGraphImage);
         >
           {t({ en: "Amit Friedman", he: "עמית פרידמן" })}
         </a>
-        <div class="pb-5 sm:mt-9 flex justify-between">
+        <div class="sm:mt-9 flex justify-between">
           <div class="flex gap-x-8 items-center">
             <a
               href={getRelativeLocaleUrl(locale, "/")}
@@ -96,7 +96,7 @@ const openGraphImage = SITE_URL + (openGraph?.image ?? defaultOpenGraphImage);
         </div>
         <slot />
       </div>
-      <div class="mt-[60px] pb-[32px]">
+      <div class="mt-[90px] pb-[32px]">
         <div class="flex gap-x-5 items-center">
           <a
             href={getRelativeLocaleUrl(locale, "/")}

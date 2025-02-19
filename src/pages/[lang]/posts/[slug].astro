@@ -34,6 +34,7 @@ const path = post.slug.split("/").splice(1).join("/");
 const locale = Astro.currentLocale as Locale;
 
 const t = useTranslations(locale);
+const a = 1;
 ---
 
 <Layout
@@ -69,14 +70,14 @@ const t = useTranslations(locale);
     }
     h1,
     h2 {
-      margin-block-start: 40px;
-      margin-block-end: 24px;
+      margin-block-start: 32px;
+      margin-block-end: 16px;
     }
     h3,
     h4,
     h5,
     h6 {
-      margin-block-start: 32px;
+      margin-block-start: 24px;
       margin-block-end: 16px;
     }
     /*
@@ -88,12 +89,14 @@ const t = useTranslations(locale);
       font-style: italic;
     }
     ol,
-    ul {
+    ul,
+    ol {
       margin-inline-start: 20px;
+      margin-block-end: 20px;
     }
     li {
       list-style-type: decimal;
-      margin-block: 20px;
+      margin-block-end: 8px;
     }
     li p {
       margin-block: 16px;
@@ -105,8 +108,9 @@ const t = useTranslations(locale);
     li input {
       margin-inline-end: 4px;
     }
-    p {
-      margin-block: 24px;
+    p,
+    li {
+      margin-block-end: 12px;
       line-height: 28px;
     }
     a {
@@ -121,19 +125,21 @@ const t = useTranslations(locale);
       border-radius: 4px;
       padding-inline: 12px;
       padding-block: 12px;
-      margin-block: 40px;
+      margin-block-end: 24px;
+      margin-block-start: 24px;
     }
     /* Code should always be rendered ltr */
     pre {
       direction: ltr !important;
     }
     /* Inline code */
-    p code {
+    p code,
+    li code {
       color: #f2f1ec;
-      background-color: #7d7d7d;
+      background-color: #b3b3b3ff;
       border-radius: 4px;
-      padding-inline: 8px;
-      padding-block: 4px;
+      padding-inline: 4px;
+      padding-block: 2px;
       margin-inline: 2px;
     }
     table {
