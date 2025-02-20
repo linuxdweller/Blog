@@ -171,7 +171,7 @@ It is fast and requires minimal conifguration. folke is great. we love folke.
 
 ## Syntax Highlighting
 
-We use `treesitter` for syntax highlighting.
+We use [`nvim-treesitter`](https://github.com/nvim-treesitter/nvim-treesitter) for syntax highlighting.
 
 ```lua
 {
