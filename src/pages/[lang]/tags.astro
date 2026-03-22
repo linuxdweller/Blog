@@ -20,7 +20,7 @@ export async function getStaticPaths() {
   >();
 
   for (const post of posts) {
-    const [lang, ...slug] = post.slug.split("/");
+    const [lang, ...slug] = post.id.split("/");
 
     const langPosts = postsPerLang.get(lang as Locale);
 

@@ -1,5 +1,15 @@
 # i18n Blog
 
+## Dev
+
+For first timec cloning:
+
+```sh
+npm ci
+npm run build
+npm run dev -- --host
+```
+
 ## SEO
 
 1. OpenGraph

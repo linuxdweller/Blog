@@ -1,5 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
+import { existsSync } from "fs";
+import { join } from "path";
 
 import Layout from "../../../layouts/Layout.astro";
 import { useTranslations, type Locale } from "../../../i18n";
@@ -10,7 +12,7 @@ export async function getStaticPaths() {
   const posts = await getCollection("blog");
 
   const posts_ = posts.map((post) => {
-    const [lang, ...slug] = post.slug.split("/");
+    const [lang, ...slug] = post.id.split("/");
 
     return {
       params: {
@@ -29,7 +31,11 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-const path = post.slug.split("/").splice(1).join("/");
+const path = post.id.split("/").splice(1).join("/");
+
+const postSlug = post.id.split("/").at(-1);
+const ogImageFile = join(process.cwd(), "public", "og", `${postSlug}.png`);
+const ogImage = existsSync(ogImageFile) ? `/og/${postSlug}.png` : undefined;
 
 const locale = Astro.currentLocale as Locale;
 
@@ -42,6 +48,7 @@ const a = 1;
     title: post.data.title,
     url: getAbsoluteLocaleUrl(locale, `posts/${path}`),
     description: post.data.description,
+    image: ogImage,
   }}
 >
   <style is:global>

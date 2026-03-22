@@ -9,11 +9,11 @@ export async function getStaticPaths() {
   const posts = await getCollection("blog");
 
   const locales = Array.from(
-    new Set(posts.map((p) => p.slug.split("/").at(0))),
+    new Set(posts.map((p) => p.id.split("/").at(0))),
   );
 
   const postsPerLocale = locales.map((locale) => {
-    const localePosts = posts.filter((p) => p.slug.split("/").at(0) === locale);
+    const localePosts = posts.filter((p) => p.id.split("/").at(0) === locale);
 
     const tags = localePosts.map((p) => p.data.tag.uriName);
 
@@ -52,7 +52,7 @@ const locale = Astro.currentLocale as Locale;
 const posts = Astro.props.posts;
 
 const posts_ = posts.map((post) => {
-  const slug = post.slug.split("/").splice(1).join("/");
+  const slug = post.id.split("/").splice(1).join("/");
 
   return {
     title: post.data.title,
