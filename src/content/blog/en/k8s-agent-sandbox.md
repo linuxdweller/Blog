@@ -50,16 +50,19 @@ Every agent pod should run with this baseline:
 securityContext:
   runAsNonRoot: true
   runAsUser: 65534
-  readOnlyRootFilesystem: true
+  runAsGroup: 65534
   allowPrivilegeEscalation: false
   capabilities:
     drop:
       - ALL
 ```
 
-Drop all Linux capabilities. Agents do not need CAP_NET_ADMIN, CAP_SYS_PTRACE, or anything else. A read only root filesystem means that even if the agent writes a malicious script, it cannot persist it to disk. Use an emptyDir volume mount for the scratch space your agent genuinely needs, scoped and ephemeral.
+- `runAsNonRoot`: fail the container if it tries to run as root.
+- `runAsUser` and `runAsGroup`: specify a non-root UID/GID for the container.
+- `allowPrivilegeEscalation`: prevent the process from granting a newly-started program priviliges that the process did not have.
+- `capabilities: drop: ALL`: prevents kernel level operations like binding ports, changing UID/GID and file ownership. [See the full list here](https://github.com/torvalds/linux/blob/master/include/uapi/linux/capability.h).
 
-Enforce this at the cluster level with Pod Security Admission set to restricted on the namespace where your agents run:
+Enforce this at the namespace level with Pod Security Admission set to restricted:
 
 ```yaml
 apiVersion: v1
@@ -70,69 +73,145 @@ metadata:
     pod-security.kubernetes.io/enforce: restricted
 ```
 
-Pair this with Kyverno or OPA Gatekeeper policies to reject any agent pod that does not declare a seccomp profile.
+This also enforces setting a seccomp profile, which relates to the next item.
 
 ## Seccomp Profiles: Allowlist the System Calls Your Agent Actually Needs
 
-Seccomp is the most underused control in Kubernetes. It lets you define exactly which Linux system calls a container is allowed to make. For an agent that runs Python and makes HTTP calls, you need maybe 50 system calls. There are over 300 available.
+Using Seccomp we can block syscalls we know our agent won't need. The default Seccomp profile of your container runtime is a good starting point. [This is the blocked syscalls list for `containerd`](https://docs.docker.com/engine/security/seccomp/#significant-syscalls-blocked-by-the-default-profile).
 
 Use the RuntimeDefault profile as a floor:
 
 ```yaml
-seccompProfile:
-  type: RuntimeDefault
+apiVersion: v1
+kind: Pod
+metadata:
+  name: agent
+  namespace: agents
+spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
 ```
 
-For production agent workloads, generate a custom profile using tooling like Inspektor Gadget or the seccomp operator. Record the agent doing its normal work, generate the allowlist, and then enforce it. Now prompt injection that tries to call fork, execve, or ptrace gets blocked at the kernel level before anything happens.
+Figuring out which syscalls are not used by your agent is both tricky and tediuos. You should record a log of syscalls your agents use during testing using tooling like [seccomp operator](https://github.com/kubernetes-sigs/security-profiles-operator).
 
-## Network Policy: Agents Should Talk to Almost Nobody
+## Network Policy: Agents Should Not Talk Directly With Other Pods
 
-An agent pod should have a NetworkPolicy that explicitly allows only the traffic it needs. Egress to the LLM API endpoint. Egress to the specific tool backends it is authorized to call. Nothing else.
+By default, Kubernetes allows all traffic between pods — same namespace, different namespaces, everything.
+
+An agent pod should have a NetworkPolicy that denies traffic to all other pods. NetworkPolicies are additives, so explicitly allowing egress traffic to specific pods is possible if needed.
+
+This is a default deny policy for egress to all pods. It is applied to all pods in the `agents` namespace. This policy works by denying access to the entire pod subnet. Change this subnet to match your cluster's pod subnet.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: agent-egress
+  name: default-deny-egress-pods-subnet
   namespace: agents
 spec:
-  podSelector:
-    matchLabels:
-      app: agent
+  podSelector: {}
   policyTypes:
     - Egress
   egress:
     - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: tools
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              # Pod subnet of your cluster.
+              - 10.243.0.0/16
 ```
 
-No egress to the Kubernetes API server. No egress to the node metadata endpoint (169.254.169.254 is where cloud credential theft happens). No ingress from other namespaces unless explicitly required.
+## Disable ServiceAccount Automount
 
-## ServiceAccount Least Privilege
+By default, a `ServiceAccount` is mounted automatically on `/var/run/secrets/kubernetes.io/serviceaccount/token`.
 
-Every agent pod gets a dedicated Kubernetes ServiceAccount. That ServiceAccount gets no ClusterRole bindings. If the agent needs to interact with Kubernetes resources as part of its tool use, scope the Role to the minimum verbs on the minimum resources in the minimum namespace. Use IRSA on AWS or Workload Identity on GCP to give the pod cloud credentials, scoped to exactly the S3 bucket or Pub/Sub topic it needs.
-
-Automounting the default ServiceAccount token is disabled at the namespace level:
+If your pod does not use these credentials to authenticate to your cloud provider or the Kubernetes API server, we can opt out of this behavior by setting `automountServiceAccountToken: false`.
 
 ```yaml
 apiVersion: v1
-kind: ServiceAccount
+kind: Pod
 metadata:
   name: agent
-  namespace: agents
-automountServiceAccountToken: false
+spec:
+  automountServiceAccountToken: false
 ```
 
 ## Runtime Threat Detection With Falco
 
-All of the above is preventive. Falco gives you detective capability. Deploy it as a DaemonSet and write rules that fire when an agent pod does something unexpected: spawns a shell, opens a sensitive file path, or makes a DNS query to an unexpected domain. Wire the alerts to your incident response pipeline.
+All of the above is preventive. Falco gives you detective capability. Deploy it as a DaemonSet and write rules that fire when an agent pod does something unexpected: socket mutations, mutating Linux `coreutils` executeables, or making a DNS query to an unexpected domain. Wire the alerts to your incident response pipeline.
 
 The combination of prevention and detection is what zero trust for agent workloads actually looks like in practice on Kubernetes.
 
 ## Putting It Together
 
-The threat model for LLM agents is unique because the attack vector is the model output itself. Prompt injection is a real production concern and it means your agent pod will sometimes try to do things it should not. The Kubernetes security stack gives you the tools to make sure that when that happens, the blast radius is a failed syscall rather than a compromised cluster.
+The final Pod, NetworkPolicy, RuntimeClass manifests we assembled:
 
-gVisor or Kata for kernel isolation. Seccomp allowlists. Read only filesystems. Dropped capabilities. Tight NetworkPolicy. Scoped ServiceAccounts. Falco for detection. None of these are novel Kubernetes features. Applying them together to agent workloads is what separates a production ready AI platform from a demo that got deployed.
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agents
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.35.0-standalone/pod.json
+apiVersion: v1
+kind: Pod
+metadata:
+  name: envoy
+  namespace: agents
+spec:
+  runtimeClassName: gvisor
+  automountServiceAccountToken: false
+  containers:
+    - name: claude-code
+      image: claude-code:latest
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+      livenessProbe: &probe
+        httpGet:
+          path: /
+          port: 8080
+      readinessProbe: *probe
+      startupProbe: *probe
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 50m
+          memory: 128Mi
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.35.0-standalone/networkpolicy.json
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: agents
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.243.0.0/16
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.35.0-standalone/runtimeclass.json
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+```
