@@ -154,7 +154,7 @@ The Job gets a ServiceAccount, the ServiceAccount gets bound to the ClusterRole,
 
 ## What You Get
 
-Combine `agent-sandbox` with the hardening from the [previous post](/blog/en/k8s-agent-sandbox) — gVisor RuntimeClass, seccomp profiles, Falco rules — and you get a production-grade agent execution layer on Kubernetes: sandboxed pods that agents can claim and release on demand, a single proxied entry point that enforces network isolation, least-privilege RBAC so agents cannot touch anything outside their sandbox, and warm pools that eliminate cold-start latency.
+Combine `agent-sandbox` with the hardening from the [previous post](/blog/en/k8s-agent-sandbox) such as gVisor RuntimeClass, seccomp profiles, and Falco rules. Get a production-grade agent execution layer on Kubernetes with sandboxed pods that agents can claim and release on demand, a single proxied entry point that enforces network isolation, least-privilege RBAC so agents cannot touch anything outside their sandbox, and warm pools that eliminate cold-start latency.
 
 This is what running LLM agents in Kubernetes should look like. Not a raw pod with a mounted service account token. A first-class, auditable, isolated execution environment with a Kubernetes-native API.
 
