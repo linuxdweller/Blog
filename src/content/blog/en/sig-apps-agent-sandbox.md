@@ -2,7 +2,7 @@
 title: "Deploying LLM Agents in Kubernetes Sandboxes with kubernetes-sigs/agent-sandbox"
 date: "2026-03-31"
 tag: { displayName: "K8s", uriName: "k8s" }
-description: "How to use the Kubernetes SIG project agent-sandbox to run LLM agents in isolated, cloud-native sandboxes — and how to deploy the router with Helm so agents can claim and use sandboxes from any pod in your cluster."
+description: "How to use the Kubernetes SIG Apps project agent-sandbox to run LLM agents in isolated, cloud-native sandboxes — and how to deploy the router with Helm so agents can claim and use sandboxes from any pod in your cluster."
 ---
 
 An agent executing code, browsing the web, or querying a database is dynamic by nature. Securing agents requires network and kernel isolation which is not present in regular K8s clusters.
@@ -23,7 +23,7 @@ Such a controller can also help with automating small but meaningful tasks like 
 
 ## Introducing agent-sandbox
 
-[`agent-sandbox` is a Kubernetes SIG project that introduces a dedicated API surface for running isolated agent workloads](https://github.com/kubernetes-sigs/agent-sandbox). It ships a controller, a router, and four CRDs under the `agents.x-k8s.io` API group.
+[`agent-sandbox` is a Kubernetes SIG Apps project that introduces a dedicated API surface for running isolated agent workloads](https://github.com/kubernetes-sigs/agent-sandbox). It ships a controller, a router, and four CRDs under the `agents.x-k8s.io` API group.
 
 The project installs directly from its release manifest:
 
@@ -65,7 +65,7 @@ The chart can be installed with:
 ```sh
 helm install agent-sandbox-router \
   oci://ghcr.io/linuxdweller/charts/agent-sandbox-router \
-  --version 1.0.2 \
+  --version 2.0.1 \
   --set httproute.hostname=<desired-router-hostname> \
   --set httproute.parentRef.name=<your-gasteway-name> \
   --set httproute.parentRef.namespace=<your-gateway-namespace>
