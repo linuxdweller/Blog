@@ -136,7 +136,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: sandbox-client
-          image: python:3.12-slim
+          image: python:3.14-slim
           command:
             - sh
             - -c
