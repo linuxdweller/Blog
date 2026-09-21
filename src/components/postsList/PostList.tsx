@@ -12,9 +12,13 @@ interface Props {
 }
 
 const PostList = ({ posts, locale }: Props) => {
+  const sortedPosts = [...posts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
   return (
     <div className="mt-[48px]">
-      {posts.map((page) => {
+      {sortedPosts.map((page) => {
         return (
           <a
             hrefLang={locale}

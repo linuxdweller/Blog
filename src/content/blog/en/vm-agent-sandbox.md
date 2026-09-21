@@ -1,6 +1,6 @@
 ---
 title: "Autopilot for Coding Agents Without Handing Over Your Homelab"
-date: "2026-02-03"
+date: "2026-09-21"
 tag: { displayName: "K8s", uriName: "k8s" }
 description: "Autopilot for Coding Agents Without Handing Over Your Homelab"
 ---
