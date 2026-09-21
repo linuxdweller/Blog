@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 562 600" role="img" aria-label="The coding agent talks to an Envoy AI Gateway which forwards to an LLM provider and reports metrics to Grafana; it pushes to a GitOps repo which an ApplicationSet deploys into the dedicated k8s cluster; it also has direct read-only kubectl access to that cluster; and its direct access to the homelab is blocked.">
+  <style>
+    text { font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif; }
+    .node-fill { fill: #FFFFFF; }
+    .title { font-weight: 700; font-size: 18px; fill: #3A3A3A; }
+    .sub { font-size: 14px; fill: #7D7D7D; }
+    .edge-label { font-size: 13px; fill: #7D7D7D; }
+    .group-label { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .muted-title { fill: #878787; }
+    .muted-box { fill: none; stroke: #B9B7AE; stroke-dasharray: 3 3; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9C9A91"/>
+    </marker>
+    <marker id="arrowBlocked" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#C4433F"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="562" height="600" fill="#FBFAF7"/>
+
+  <!-- LLM path group -->
+  <rect x="20" y="124" width="292" height="208" rx="10" class="muted-box"/>
+  <text x="32" y="144" class="group-label" fill="#2A78D6">LLM path</text>
+
+  <!-- GitOps path group -->
+  <rect x="332" y="124" width="210" height="208" rx="10" class="muted-box"/>
+  <text x="344" y="144" class="group-label" fill="#4A3AA7">GitOps path</text>
+
+  <!-- agent -->
+  <rect x="20" y="24" width="522" height="66" rx="10" class="node-fill" stroke="#3A3A3A" stroke-width="2"/>
+  <text x="281" y="56" text-anchor="middle" class="title">Coding Agent</text>
+  <text x="281" y="76" text-anchor="middle" class="sub">(opencode)</text>
+
+  <!-- proxy -->
+  <rect x="30" y="170" width="272" height="66" rx="10" class="node-fill" stroke="#2A78D6" stroke-width="2"/>
+  <text x="166" y="200" text-anchor="middle" class="title" fill="#2A78D6" font-size="17">Envoy AI Gateway</text>
+  <text x="166" y="218" text-anchor="middle" class="sub" font-size="12">rate limit + metrics</text>
+
+  <!-- providers -->
+  <rect x="30" y="256" width="130" height="56" rx="10" class="node-fill" stroke="#2A78D6" stroke-width="2"/>
+  <text x="95" y="290" text-anchor="middle" class="title" fill="#2A78D6" font-size="13">LLM Provider</text>
+
+  <!-- grafana -->
+  <rect x="172" y="256" width="130" height="56" rx="10" class="node-fill" stroke="#2A78D6" stroke-width="2"/>
+  <text x="237" y="290" text-anchor="middle" class="title" fill="#2A78D6" font-size="13">Grafana</text>
+
+  <!-- gitrepo -->
+  <rect x="342" y="170" width="190" height="56" rx="10" class="node-fill" stroke="#4A3AA7" stroke-width="2"/>
+  <text x="437" y="204" text-anchor="middle" class="title" fill="#4A3AA7" font-size="17">GitOps repo</text>
+
+  <!-- appset -->
+  <rect x="342" y="256" width="190" height="56" rx="10" class="node-fill" stroke="#4A3AA7" stroke-width="2"/>
+  <text x="437" y="290" text-anchor="middle" class="title" fill="#4A3AA7" font-size="16">ApplicationSet</text>
+
+  <!-- ns -->
+  <rect x="20" y="372" width="522" height="60" rx="10" class="node-fill" stroke="#1BAF7A" stroke-width="2"/>
+  <text x="281" y="409" text-anchor="middle" class="title" fill="#1BAF7A" font-size="17">Dedicated K8s Cluster</text>
+
+  <!-- home -->
+  <rect x="20" y="482" width="522" height="66" rx="10" class="muted-box"/>
+  <text x="281" y="514" text-anchor="middle" class="title muted-title" font-size="17">Homelab</text>
+  <text x="281" y="534" text-anchor="middle" class="sub">(repos + APIs)</text>
+
+  <!-- agent -> proxy -->
+  <line x1="241" y1="90" x2="166" y2="170" stroke="#9C9A91" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- proxy -> providers -->
+  <line x1="166" y1="236" x2="95" y2="256" stroke="#9C9A91" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- proxy -> grafana -->
+  <line x1="166" y1="236" x2="237" y2="256" stroke="#9C9A91" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- agent -> gitrepo -->
+  <line x1="321" y1="90" x2="437" y2="170" stroke="#9C9A91" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="358" y="105" text-anchor="start" class="edge-label">git push</text>
+
+  <!-- gitrepo -> appset -->
+  <line x1="437" y1="226" x2="437" y2="252" stroke="#9C9A91" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- appset -> cluster -->
+  <line x1="437" y1="312" x2="437" y2="368" stroke="#9C9A91" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="452" y="346" text-anchor="start" class="edge-label">deploy</text>
+
+  <!-- agent -> ns (kubectl read-only), routed through the gap between the two groups -->
+  <path d="M281,90 L322,115 L322,368" fill="none" stroke="#9C9A91" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="307" y="356" text-anchor="end" class="edge-label">kubectl read-only</text>
+
+  <!-- agent -.-> home (BLOCKED) -->
+  <path d="M140,90 L10,115 L10,460 L100,460 L100,478" fill="none" stroke="#C4433F" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrowBlocked)"/>
+  <g transform="translate(55,460)">
+    <line x1="-6" y1="-6" x2="6" y2="6" stroke="#C4433F" stroke-width="2"/>
+    <line x1="-6" y1="6" x2="6" y2="-6" stroke="#C4433F" stroke-width="2"/>
+  </g>
+  <text x="55" y="448" text-anchor="middle" class="edge-label" fill="#C4433F" font-weight="700">BLOCKED</text>
+</svg>
