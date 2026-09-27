@@ -1,0 +1,12 @@
+flowchart TD
+    Client
+    Gateway["Agent Router"]
+
+    Metrics["Prometheus"]
+    Grafana["Grafana<br/>Cost + usage dashboards"]
+    Providers["LLM Providers<br/>Anthropic / OpenRouter / OpenAI"]
+
+    Client -- "Rate Limiting" --> Gateway
+    Gateway --> Providers
+    Gateway -- "Usage Metrics" --> Metrics
+    Metrics --> Grafana

@@ -1,0 +1,19 @@
+flowchart LR
+    subgraph EnvoyStack["Envoy Gateway stack"]
+        direction LR
+        GatewayCRDs{{"<div style='line-height:1.15'>Gateway API CRDs<br/><span style='font-size:0.6em'>ArgoCD App</span></div>"}}
+        EnvoyGateway{{"<div style='line-height:1.15'>Envoy Gateway<br/><span style='font-size:0.6em'>ArgoCD App</span></div>"}}
+        GatewayCRDs --> EnvoyGateway
+    end
+
+    subgraph RouterStack["Agent Router stack"]
+        direction LR
+        RouterCRDs{{"<div style='line-height:1.15'>Agent Router CRDs<br/><span style='font-size:0.6em'>ArgoCD App</span></div>"}}
+        AgentRouter{{"<div style='line-height:1.15'>Agent Router<br/><span style='font-size:0.6em'>ArgoCD App</span></div>"}}
+        RouterCRDs --> AgentRouter
+    end
+
+    Redis{{"<div style='line-height:1.15'>Redis<br/><span style='font-size:0.6em'>ArgoCD App</span></div>"}}
+
+    EnvoyGateway --> AgentRouter
+    Redis --> AgentRouter

@@ -1,0 +1,20 @@
+{
+  "theme": "base",
+  "look": "classic",
+  "themeVariables": {
+    "background": "#FBFAF7",
+    "primaryColor": "#FFFFFF",
+    "primaryTextColor": "#3A3A3A",
+    "primaryBorderColor": "#3A3A3A",
+    "lineColor": "#9C9A91",
+    "fontFamily": "Open Sans, ui-sans-serif, system-ui, sans-serif",
+    "fontSize": "32px",
+    "edgeLabelBackground": "#FFFFFF"
+  },
+  "flowchart": {
+    "htmlLabels": true,
+    "curve": "linear",
+    "wrappingWidth": 260,
+    "diagramPadding": 24
+  }
+}

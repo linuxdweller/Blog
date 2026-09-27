@@ -10,6 +10,15 @@ npm run build
 npm run dev -- --host
 ```
 
+## Diagrams
+
+`.mmd` sources live in `diagrams/`, rendered to `public/` via `mmdc` (`mermaid.config.json` / `mermaid.mobile.config.json`).
+
+```sh
+npm run diagram -- -i diagrams/envoy-ai-gateway-flow.mmd -o public/envoy-ai-gateway-flow.svg
+npm run diagram:mobile -- -i diagrams/envoy-ai-gateway-flow-mobile.mmd -o public/envoy-ai-gateway-flow-mobile.svg
+```
+
 ## SEO
 
 1. OpenGraph
