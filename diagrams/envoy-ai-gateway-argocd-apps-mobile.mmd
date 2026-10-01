@@ -1,10 +1,13 @@
-flowchart LR
+flowchart TD
     subgraph EnvoyStack["Envoy Gateway stack"]
-        direction LR
+        direction TD
         GatewayCRDs{{"<div style='line-height:1.15'>Gateway API CRDs<br/><span style='font-size:0.6em'>Helm Chart</span></div>"}}
         EnvoyGateway{{"<div style='line-height:1.15'>Envoy Gateway<br/><span style='font-size:0.6em'>Helm Chart</span></div>"}}
         GatewayCRDs --> EnvoyGateway
     end
+
+    Redis{{"<div style='line-height:1.15'>Redis<br/><span style='font-size:0.6em'>K8s Manifests</span></div>"}}
+    EnvoyGateway ~~~ Redis
 
     subgraph RouterStack["Agent Router stack"]
         direction LR
@@ -12,8 +15,6 @@ flowchart LR
         AgentRouter{{"<div style='line-height:1.15'>Agent Router<br/><span style='font-size:0.6em'>Helm Chart</span></div>"}}
         RouterCRDs --> AgentRouter
     end
-
-    Redis{{"<div style='line-height:1.15'>Redis<br/><span style='font-size:0.6em'>K8s Manifests</span></div>"}}
 
     EnvoyGateway --> AgentRouter
     Redis --> AgentRouter

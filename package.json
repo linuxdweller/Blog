@@ -9,8 +9,8 @@
     "astro": "astro",
     "format": "prettier -w .",
     "check": "astro check",
-    "diagram": "mmdc -c mermaid.config.json -b '#FBFAF7' --no-font-embed",
-    "diagram:mobile": "mmdc -c mermaid.mobile.config.json -b '#FBFAF7' --no-font-embed"
+    "diagram": "mmdc -c mermaid.config.json -b '#FBFAF7'",
+    "diagram:mobile": "mmdc -c mermaid.mobile.config.json -b '#FBFAF7'"
   },
   "dependencies": {
     "@astrojs/react": "^4.1.2",

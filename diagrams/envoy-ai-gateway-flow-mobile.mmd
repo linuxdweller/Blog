@@ -1,12 +1,13 @@
 flowchart TD
-    Client
-    Gateway["Agent Router"]
-
-    Metrics["Prometheus"]
-    Grafana["Grafana<br/>Cost + usage dashboards"]
-    Providers["LLM Providers<br/>Anthropic / OpenRouter / OpenAI"]
-
-    Client -- "Rate Limiting" --> Gateway
-    Gateway --> Providers
-    Gateway -- "Usage Metrics" --> Metrics
-    Metrics --> Grafana
+    subgraph Features["<span style='font-size:1.5em'>Agent Router</span>"]
+            direction LR
+            CRDs["K8s CRDs"]
+            Routes["LLM Routes"]
+            Fallback["Provider Fallback"]
+            Keys["API Keys"]
+            Budget["Budget per Consumer"]
+            CRDs --> Routes
+            CRDs --> Fallback
+            CRDs --> Keys
+            CRDs --> Budget
+    end

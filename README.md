@@ -17,6 +17,8 @@ npm run dev -- --host
 ```sh
 npm run diagram -- -i diagrams/envoy-ai-gateway-flow.mmd -o public/envoy-ai-gateway-flow.svg
 npm run diagram:mobile -- -i diagrams/envoy-ai-gateway-flow-mobile.mmd -o public/envoy-ai-gateway-flow-mobile.svg
+npm run diagram -- -i diagrams/envoy-ai-gateway-argocd-apps.mmd -o public/envoy-ai-gateway-argocd-apps.svg
+npm run diagram:mobile -- -i diagrams/envoy-ai-gateway-argocd-apps-mobile.mmd -o public/envoy-ai-gateway-argocd-apps-mobile.svg
 ```
 
 ## SEO
