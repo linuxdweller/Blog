@@ -1,0 +1,15 @@
+flowchart TD
+    Client["fa:fa-user Client"]
+    Gateway{{"<div style='line-height:1.15'>Gateway<br/><span style='font-size:0.6em'>checks budget via rate-limit service</span></div>"}}
+    Reject["✗ 429"]
+    Gemini(["Gemini"])
+    OpenRouter(["OpenRouter"])
+    Prometheus{{"Prometheus"}}
+    Grafana["Grafana dashboard"]
+
+    Client -->|API key| Gateway
+    Gateway -->|over limit| Reject
+    Gateway -->|ok, primary| Gemini
+    Gateway -.ok, fallback.-> OpenRouter
+    Gateway -->|metrics| Prometheus
+    Prometheus --> Grafana
