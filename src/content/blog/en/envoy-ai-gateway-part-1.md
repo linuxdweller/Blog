@@ -7,7 +7,7 @@ description: "Operating an AI gateway entirely with K8s Custom Resources"
 
 **This article is fully human written. No LLM was used to generate any of the text.**
 
-This is a two-part series. Part one (the current article) shows how to install Agent Router. Part two (a future article) will show how to deploy a production-ready AI gateway with it.
+This is a two-part series. Part one (the current article) shows how to install Agent Router. [Part two](/en/posts/envoy-ai-gateway-part-2), shows how to deploy a production-ready AI gateway with it.
 
 Agent Router (formerly Envoy AI Gateway) is a K8s operator for deploying fully fledged
 AI/LLM gateways. It is built on Envoy Gateway, the official K8s Gateway API implementation for Envoy.
@@ -282,5 +282,5 @@ envoy-ratelimit-55b448d98c-s66w8         1/1     Running   0          1d
 
 ## Next Steps
 
-This is the end of part one. Check out part two to see how we are going to deploy an actual AI Gateway with consumer keys,
+This is the end of part one. [Check out part two](/en/posts/envoy-ai-gateway-part-2) to see how we are going to deploy an actual AI Gateway with consumer keys,
 rate limiting, and model/provider fallbacks. This will be done using all the different CRDs of Agent Router and Envoy Gateway.
