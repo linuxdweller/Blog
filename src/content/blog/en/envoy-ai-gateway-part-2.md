@@ -7,10 +7,10 @@ description: "Operating an AI gateway entirely with GitOps and K8s Custom Resour
 
 **This article is fully human written. No LLM was used to generate any of the text.**
 
-This is a two-part series. Part one (the previous article) shows how to install Agent Router.
+This is a two-part series. [Part one](/en/posts/envoy-ai-gateway-part-1) (the previous article) shows how to install Agent Router.
 Part two (this article) shows how to deploy a production-ready AI gateway with it.
 
-Agent Router (formerly Envoy AI Gateway) is a K8s operator for deploying fully fledged
+[Agent Router](https://theagentrouter.ai/) (formerly Envoy AI Gateway) is a K8s operator for deploying fully fledged
 AI/LLM gateways. It is built on Envoy Gateway, the official K8s Gateway API implementation for Envoy.
 
 ## Goal
@@ -27,6 +27,15 @@ gateway with:
   <img src="/envoy-ai-gateway-request-flow.svg" alt="Client request flow: a client sends a request with an API key to the Gateway, which checks the budget via its rate-limit service, rejects with 429 when over limit, otherwise routes to Gemini as primary or OpenRouter as fallback, and emits metrics to Prometheus which feeds a Grafana dashboard.">
 </picture>
 
+All of this is wired together purely with K8s Custom Resources, referencing each other through annotations and `targetRefs`/`backendRefs`.
+
+Here is the full resource graph we are about to build, section by section:
+
+<picture>
+  <source media="(max-width: 640px)" srcset="/envoy-ai-gateway-resources-mobile.svg">
+  <img src="/envoy-ai-gateway-resources.svg" alt="K8s resource graph: a Gateway references a GatewayConfig via annotation and accepts an AIGatewayRoute via parentRefs; the route's backendRefs point at AIServiceBackend resources, each backed by a Backend that a BackendTLSPolicy targets; a SecurityPolicy targets the route and reads credentials from a Secret, which an ExternalSecret writes using a generated Password; a BackendTrafficPolicy targets the Gateway for rate limiting, and a PodMonitor selects the Gateway's pod by label for scraping.">
+</picture>
+
 Using CRDs for defining everything is super useful for two main reasons:
 
 1. It reduces drift, as there is a controller which constantly reconciles live state.
@@ -37,11 +46,11 @@ Using CRDs for defining everything is super useful for two main reasons:
 
 You'll need a K8s cluster with the following operators installed:
 
-1. Agent Router with the configuration from part one.
+1. Agent Router with the configuration from [part one](/en/posts/envoy-ai-gateway-part-1).
 2. [External Secrets Operator](https://external-secrets.io/main/), for generating random API keys.
 3. [cert-manager](https://cert-manager.io/docs/), for issuing TLS certificates for the gateway.
-4. [Grafana operator](https://grafana.github.io/grafana-operator/docs/), for creating the dashboard.
-5. [Prometheus operator](https://prometheus-operator.dev/docs/getting-started/introduction/), for scarping metrics from the gateway.
+4. [Prometheus operator](https://prometheus-operator.dev/docs/getting-started/introduction/), for scarping metrics from the gateway.
+5. Grafana, for creating the dashboard.
 
 ## Creating A Gateway
 

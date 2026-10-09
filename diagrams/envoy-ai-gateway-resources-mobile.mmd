@@ -1,0 +1,40 @@
+flowchart TD
+    subgraph GatewaySub["Gateway"]
+        direction TD
+        GW{{"<div style='line-height:1.15'>Gateway<br/><span style='font-size:0.6em'>gateway.networking.k8s.io</span></div>"}}
+        GWC{{"<div style='line-height:1.15'>GatewayConfig<br/><span style='font-size:0.6em'>aigateway.envoyproxy.io</span></div>"}}
+        GW -->|annotation| GWC
+    end
+
+    Route{{"<div style='line-height:1.15'>AIGatewayRoute<br/><span style='font-size:0.6em'>generates HTTPRoute 'models'</span></div>"}}
+
+    subgraph BackendSub["Backend"]
+        direction TD
+        BE{{"<div style='line-height:1.15'>Backend<br/><span style='font-size:0.6em'>gateway.envoyproxy.io</span></div>"}}
+        TLS{{"<div style='line-height:1.15'>BackendTLSPolicy<br/><span style='font-size:0.6em'>gateway.networking.k8s.io</span></div>"}}
+        AISB{{"<div style='line-height:1.15'>AIServiceBackend<br/><span style='font-size:0.6em'>aigateway.envoyproxy.io</span></div>"}}
+        TLS -->|targetRefs| BE
+        AISB -->|backendRef| BE
+    end
+
+    GW -->|parentRefs| Route
+    Route -->|backendRefs<br/>priority, weight| AISB
+
+    subgraph KeySub["API Key"]
+        direction TD
+        Pwd{{"<div style='line-height:1.15'>Password<br/><span style='font-size:0.6em'>generators.external-secrets.io</span></div>"}}
+        ES{{"<div style='line-height:1.15'>ExternalSecret<br/><span style='font-size:0.6em'>external-secrets.io</span></div>"}}
+        SecretNode["Secret"]
+        SecPol{{"<div style='line-height:1.15'>SecurityPolicy<br/><span style='font-size:0.6em'>gateway.envoyproxy.io</span></div>"}}
+        ES -->|generatorRef| Pwd
+        ES -->|writes| SecretNode
+        SecPol -->|credentialRefs| SecretNode
+    end
+
+    SecPol -->|targetRefs| Route
+
+    Budget{{"<div style='line-height:1.15'>BackendTrafficPolicy<br/><span style='font-size:0.6em'>gateway.envoyproxy.io</span></div>"}}
+    Monitor{{"<div style='line-height:1.15'>PodMonitor<br/><span style='font-size:0.6em'>monitoring.coreos.com</span></div>"}}
+
+    Budget -->|targetRefs| GW
+    Monitor -.->|label selector| GW
