@@ -25,8 +25,6 @@ _Well, actually_, there are several problems with working on your homelab with a
 
 We are going to create a Gitops-based isolated dev environment for our coding agent.
 
-**Disclaimer**: this solution is great for _me_. I already develop on VMs over ssh, use ArgoCD to deploy software, and expose services to my home network via K8s Gateway API.
-
 <picture>
   <source media="(max-width: 640px)" srcset="/vm-agent-sandbox-flow-mobile.svg">
   <img src="/vm-agent-sandbox-flow.svg" alt="Flowchart of the agent sandbox: the coding agent calls an Envoy AI Gateway which forwards to an LLM provider and reports metrics to Grafana, pushes to a GitOps repo that ArgoCD's ApplicationSet deploys into the dedicated k8s cluster, reads that cluster directly over kubectl, and is blocked from reaching the homelab.">
@@ -43,13 +41,15 @@ The solution consists of:
 
 Together, these prevent data exfiltration and unauthorized API usage, alongside neat observability.
 
-## Implementation
+**Disclaimer**: this solution is great for _me_. I already develop on VMs over ssh, use ArgoCD to deploy software, and expose services to my home network via K8s Gateway API.
 
-My homelab is built around Kubernetes so I'm going to build the solution with it.
+## Building The Setup
+
+My homelab is built around Kubernetes so I'm going to build the solution around it.
 
 ### Dedicated (KubeVirt) Dev VM
 
-A debian 13 VM provisioned with KubeVirt. We block access to internal homelab subnets with a network policy attached to the VM pod.
+A debian 13 VM is provisioned with KubeVirt. We block access to internal homelab subnets with a network policy attached to the VM pod.
 
 ```yaml
 apiVersion: kubevirt.io/v1
@@ -150,13 +150,119 @@ spec:
           port: 443
 ```
 
+### Dedicated GitOps Repo
+
+Configure a dedicated gitops repository which is connected only to our dedicated k8s cluster.
+
+The agent should have a fine grained access token scoped to this repo so it can push commits only to it.
+
+An ApplicationSet watches this repo and generates an application from each top level directory. The application
+is installed to a namespace named after the directory.
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: agent-sandbox
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/linuxdweller/agent-sandbox-gitops
+        revision: HEAD
+        directories:
+          - path: "*"
+  template:
+    metadata:
+      name: "{{ .path.basenameNormalized }}"
+    spec:
+      project: agent-sandbox
+      source:
+        repoURL: https://github.com/linuxdweller/agent-sandbox-gitops
+        targetRevision: HEAD
+        path: "{{ .path.path }}"
+      destination:
+        name: agent-sandbox/agent-sandbox-cluster
+        namespace: "{{ .path.basenameNormalized }}"
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+        retry:
+          limit: -1
+          backoff:
+            duration: 15s
+            factor: 2
+            maxDuration: 60s
+```
+
+The AppProject is scoped to deploy specific resources only to specific namespaces. We prohibit creating cluster scoped resources (such as ClusterRole) to prevent potential access to other namespaces.
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: agent-sandbox
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: >-
+    Sandbox project for content pushed by the agent-sandbox VM to
+    agent-sandbox-gitops.
+  sourceRepos:
+    - https://github.com/linuxdweller/agent-sandbox-gitops
+  destinations:
+    - name: agent-sandbox/agent-sandbox-cluster
+      namespace: litellm
+  clusterResourceWhitelist:
+    - group: external-secrets.io
+      kind: ClusterSecretStore
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: ServiceAccount
+    - group: ""
+      kind: ResourceQuota
+    - group: ""
+      kind: LimitRange
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: argoproj.io
+      kind: Application
+    - group: argoproj.io
+      kind: AppProject
+    - group: argoproj.io
+      kind: ApplicationSet
+  roles:
+    - name: sync-role
+      policies:
+        - p, proj:agent-sandbox:sync-role, applications, sync, agent-sandbox/litellm, allow
+        - p, proj:agent-sandbox:sync-role, applications, get, agent-sandbox/litellm, allow
+```
+
+The AppProject includes a role with read/refresh/sync permissions which our agent will use to trigger those actions manually.
+
 ### Dedicated K8s Cluster
 
-The cluster must be connected to your gitops operator which is ArgoCD in my case.
+We create a dedicated K8s cluster and connect it to ArgoCD. The manifests for that are ommited for brevity since this process is different for everyone.
 
-I omitted the cluster manifests for brevity as it doesn't matter how you provision the cluster.
+ArgoCD is configured (via AppProject settings) to only deploy resources to specific namesapces which are used only by the agent for development.
 
-Network policies in the dev namespaces should be created to prevent pods from accessing your homelab subnets.
+Segregating the agent to specific dev namespaces prevents it from accessing the rest of our homelab services which live outside the cluster.
+
+In case pods can reach your homelab subnets, it is important to create a network policy to prevent that in each namespace the agent can deploy to:
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -192,7 +298,9 @@ spec:
               - 100.64.0.0/10
 ```
 
-Also, a Service Account is created for our agent to interact with the cluster directly for improved troubleshooting.
+### Read-Only Service Account
+
+While mutating actions (creating resources) happen through git, querying the live state of the cluster is done with a read-only SA.
 
 It is equipped with permissions to:
 
@@ -272,110 +380,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: agent-sandbox-readonly-nodes
-```
-
-### Dedicated GitOps Repo
-
-Configure a dedicated gitops repository which is connected only to the dedicated k8s cluster.
-
-The agent gets a fine grained access token scoped to this repo so it can push commits only to it.
-
-An ApplicationSet watches this repo and generates an application from each top level directory. The application
-is installed to a dev namespace named after the directory.
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: agent-sandbox
-  namespace: argocd
-spec:
-  goTemplate: true
-  goTemplateOptions:
-    - missingkey=error
-  generators:
-    - git:
-        repoURL: https://github.com/linuxdweller/agent-sandbox-gitops
-        revision: HEAD
-        directories:
-          - path: "*"
-  template:
-    metadata:
-      name: "{{ .path.basenameNormalized }}"
-    spec:
-      project: agent-sandbox
-      source:
-        repoURL: https://github.com/linuxdweller/agent-sandbox-gitops
-        targetRevision: HEAD
-        path: "{{ .path.path }}"
-      destination:
-        name: agent-sandbox/agent-sandbox-cluster
-        namespace: "{{ .path.basenameNormalized }}"
-      syncPolicy:
-        automated:
-          selfHeal: true
-          prune: true
-        syncOptions:
-          - CreateNamespace=true
-          - ServerSideApply=true
-        retry:
-          limit: -1
-          backoff:
-            duration: 15s
-            factor: 2
-            maxDuration: 60s
-```
-
-The AppProject is scoped to deploy specific resources only to the specific dev namespaces. It also can't create any cluster scoped resources as these can be used to obtain permissions in non-dev namespaces (via creating a ClusterRole for example).
-
-A role with read/refresh/sync permissions is created for convenience as these are actions we want the agent to be able to run.
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: AppProject
-metadata:
-  name: agent-sandbox
-  namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-spec:
-  description: >-
-    Sandbox project for content pushed by the agent-sandbox VM to
-    agent-sandbox-gitops.
-  sourceRepos:
-    - https://github.com/linuxdweller/agent-sandbox-gitops
-  destinations:
-    - name: agent-sandbox/agent-sandbox-cluster
-      namespace: litellm
-  clusterResourceWhitelist:
-    - group: external-secrets.io
-      kind: ClusterSecretStore
-  namespaceResourceBlacklist:
-    - group: ""
-      kind: Secret
-    - group: ""
-      kind: ServiceAccount
-    - group: ""
-      kind: ResourceQuota
-    - group: ""
-      kind: LimitRange
-    - group: rbac.authorization.k8s.io
-      kind: Role
-    - group: rbac.authorization.k8s.io
-      kind: RoleBinding
-    - group: networking.k8s.io
-      kind: NetworkPolicy
-    - group: argoproj.io
-      kind: Application
-    - group: argoproj.io
-      kind: AppProject
-    - group: argoproj.io
-      kind: ApplicationSet
-  roles:
-    - name: sync-role
-      policies:
-        - p, proj:agent-sandbox:sync-role, applications, sync, agent-sandbox/litellm, allow
-        - p, proj:agent-sandbox:sync-role, applications, get, agent-sandbox/litellm, allow
 ```
 
 ### AI Gateway
