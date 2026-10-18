@@ -1,0 +1,23 @@
+%%{init: {"themeVariables": {"fontSize": "16px"}, "elk": {"straightenEdges": true}}}%%
+flowchart LR
+    Agent["fa:fa-robot Coding Agent<br/><span style='font-size:0.6em'>running directly in your homelab</span>"]
+
+    subgraph External["External exposure"]
+        direction TD
+        Provider(["LLM Provider"])
+        ThirdParty(["3rd parties"])
+    end
+
+    subgraph Homelab["Homelab network"]
+        direction TD
+        APIs["<div style='line-height:1.15'>Internal APIs<br/><span style='font-size:0.6em'>sub-optimal authn/authz</span></div>"]
+        Services["Homelab services"]
+    end
+
+    Cost["fa:fa-coins Unbounded spend"]
+
+    Agent -->|"1. records prompts & source code"| Provider
+    Agent -->|"2. leaks personal data & keys"| ThirdParty
+    Agent -->|"3. exploits weak internal auth"| APIs
+    Agent -.->|"4. tinkers & breaks"| Services
+    Agent -->|"5. runaway token usage"| Cost

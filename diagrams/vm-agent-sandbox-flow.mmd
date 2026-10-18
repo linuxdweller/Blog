@@ -1,0 +1,31 @@
+%%{init: {"themeVariables": {"fontSize": "16px"}}}%%
+flowchart TD
+    Agent["Dedicated Dev VM<br/><span style='font-size:0.6em'>fa:fa-robot Coding Agent</span>"]
+
+    subgraph DeployPath["Deploy path"]
+        direction TD
+        GitOps["GitOps repo<br/><span style='font-size:0.6em'>→ ArgoCD</span>"]
+        Cluster["Dedicated K8s Cluster"]
+        GitOps --> Cluster
+    end
+
+    subgraph BlockedPath["Blocked path"]
+        direction TD
+        NetworkPolicy["NetworkPolicy"]
+        Homelab["Homelab<br/><span style='font-size:0.6em'>(repos + APIs)</span>"]
+        NetworkPolicy -.->|blocked| Homelab
+    end
+
+    subgraph LLMPath["LLM path"]
+        direction TD
+        Gateway["Envoy AI Gateway<br/><span style='font-size:0.6em'>rate limit + metrics</span>"]
+        Provider["LLM Provider"]
+        Grafana["Grafana"]
+        Gateway --> Provider
+        Gateway --> Grafana
+    end
+
+    Agent -->|push| GitOps
+    Agent -.->|kubectl| Cluster
+    Agent -.->|egress| NetworkPolicy
+    Agent -->|LLM calls| Gateway

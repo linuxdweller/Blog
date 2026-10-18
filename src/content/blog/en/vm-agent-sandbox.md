@@ -1,6 +1,6 @@
 ---
 title: "Autopilot for Coding Agents Without Handing Over Your Homelab"
-date: "2026-09-21"
+date: "2026-10-21"
 tag: { displayName: "K8s", uriName: "k8s" }
 description: "Autopilot for Coding Agents Without Handing Over Your Homelab"
 ---
@@ -21,23 +21,28 @@ _Well, actually_, there are several problems with working on your homelab with a
 4. Coding agents can tinker with your homelab and break it.
 5. Agents can use unlimited amounts of tokens, leading to huge spend.
 
+<picture>
+  <source media="(max-width: 640px)" srcset="/vm-agent-sandbox-problem-mobile.svg">
+  <img src="/vm-agent-sandbox-problem.svg" alt="Diagram of the problem: a coding agent running directly in the homelab records prompts and source code to the LLM provider, leaks personal data and keys to 3rd parties, exploits weak internal auth on homelab APIs, can tinker with and break homelab services, and can run up unbounded token spend.">
+</picture>
+
 ## The Solution
 
 We are going to create a Gitops-based isolated dev environment for our coding agent.
-
-<picture>
-  <source media="(max-width: 640px)" srcset="/vm-agent-sandbox-flow-mobile.svg">
-  <img src="/vm-agent-sandbox-flow.svg" alt="Flowchart of the agent sandbox: the coding agent calls an Envoy AI Gateway which forwards to an LLM provider and reports metrics to Grafana, pushes to a GitOps repo that ArgoCD's ApplicationSet deploys into the dedicated k8s cluster, reads that cluster directly over kubectl, and is blocked from reaching the homelab.">
-</picture>
 
 The solution consists of:
 
 1. **Dedicated dev VM**. The agent runs inside this VM. Personal repositories are never cloned to this VM and it's blocked from accessing the homelab network via network policies.
 2. **Dedicated k8s cluster** with dedicated dev namespaces.
 3. **Dedicated gitops repo** scoped to the dedicated k8s cluster.
-   Commits in this repo act as an audit log to changes the agent made.
+   Commits in this repo act as an audit log of changes the agent made.
 4. **AI gateway** for rate limiting token usage and providing an audit log of LLM calls made by the agent.
    A grafana dashboard is used to display live LLM usage metrics exposed by the gateway.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="/vm-agent-sandbox-flow-mobile.svg">
+  <img src="/vm-agent-sandbox-flow.svg" alt="Flowchart of the agent sandbox: inside the dedicated dev VM, the coding agent calls an Envoy AI Gateway which forwards to an LLM provider and reports metrics to Grafana, pushes to a GitOps repo that ArgoCD deploys into the dedicated k8s cluster, reads that cluster directly over kubectl, and is blocked by a network policy from reaching the homelab.">
+</picture>
 
 Together, these prevent data exfiltration and unauthorized API usage, alongside neat observability.
 
@@ -150,11 +155,19 @@ spec:
           port: 443
 ```
 
+### AI Gateway
+
+Any AI gateway which has rate limiting and exposes Prometheus metrics should do the job.
+
+I chose to use [Agent Router](https://github.com/theagentrouter/agent-router) (formerly Envoy AI Gateway) as I already use Envoy Gateway controller in my clusters. It is fully configurable with CRDs and owned by a neutral foundation (Agentic AI Foundation).
+
+I have a two-part series for setting it up from scratch. [Here is part one](/en/posts/envoy-ai-gateway-part-1) (installation) and [here is part two](/en/posts/envoy-ai-gateway-part-2) (configuration).
+
 ### Dedicated GitOps Repo
 
 Configure a dedicated gitops repository which is connected only to our dedicated k8s cluster.
 
-The agent should have a fine grained access token scoped to this repo so it can push commits only to it.
+The agent should have a fine-grained access token scoped to this repo so it can push commits only to it.
 
 An ApplicationSet watches this repo and generates an application from each top level directory. The application
 is installed to a namespace named after the directory.
@@ -252,17 +265,15 @@ spec:
         - p, proj:agent-sandbox:sync-role, applications, get, agent-sandbox/litellm, allow
 ```
 
+Segregating the agent to specific dev namespaces prevents it from accessing the rest of our homelab services which live outside the cluster.
+
 The AppProject includes a role with read/refresh/sync permissions which our agent will use to trigger those actions manually.
 
 ### Dedicated K8s Cluster
 
-We create a dedicated K8s cluster and connect it to ArgoCD. The manifests for that are ommited for brevity since this process is different for everyone.
+We create a dedicated K8s cluster and connect it to ArgoCD. The manifests for that are omitted for brevity since this process is different for everyone.
 
-ArgoCD is configured (via AppProject settings) to only deploy resources to specific namesapces which are used only by the agent for development.
-
-Segregating the agent to specific dev namespaces prevents it from accessing the rest of our homelab services which live outside the cluster.
-
-In case pods can reach your homelab subnets, it is important to create a network policy to prevent that in each namespace the agent can deploy to:
+In case pods can reach your homelab subnets, it is important to create a network policy to prevent that in each namespace the agent can deploy to via Argo:
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -300,7 +311,7 @@ spec:
 
 ### Read-Only Service Account
 
-While mutating actions (creating resources) happen through git, querying the live state of the cluster is done with a read-only SA.
+While mutating actions (creating resources) happen through git and Argo, querying the live state of the cluster is done with a read-only SA.
 
 It is equipped with permissions to:
 
@@ -382,17 +393,17 @@ roleRef:
   name: agent-sandbox-readonly-nodes
 ```
 
-### AI Gateway
-
-Any AI gateway which has rate limiting and exposes prometheus metrics should do the job.
-
-I chose to use [Agent Router](https://github.com/theagentrouter/agent-router) (formerly Envoy AI Gateway) as I already use Envoy Gateway controller in my clusters. It is fully configurable with CRDs and owned by a neutral foundation (Agentic AI Foundation).
-
-I have a two-part guide for setting Agent Router up from scratch. [Here is part one](/en/posts/envoy-ai-gateway-part-1). [And here is part two](/en/posts/envoy-ai-gateway-part-2)
+This role is super useful to let our coding agent actually see what is going on in the cluster and fix things when they break.
 
 ## Result
 
-TODO
+The result is a segregated VM which can only deploy to a segregated K8s cluster:
+
+![opencode saying "I am sandboxed"](/opencode.gif)
+
+Autonomous coding agents can run without fear of them breaking things or leaking sensitive information to the outside world.
+
+In my book of homelabbing, this is a huge win.
 
 ## Tradeoffs
 
@@ -410,6 +421,6 @@ This solution is still severely lacking. Coding agents running in this sandboxed
 2. Access Prometheus metrics and OTel logs and traces.
 3. Access shared storage (I use Ceph) and routers/switches in my home network.
 
-Perhaps the next step would be a just-in-time permission system with fine grained roles for every part of my homelab.
+Perhaps the next step would be a just-in-time permission system with fine-grained roles for every part of my homelab.
 
 For now though I prefer waiting for the community to settle on tooling for agent permissions before I join everyone else and build my own.
