@@ -9,9 +9,12 @@ description: ""
 
 Because I value your time, here is the result of this blog post: **a Kubernetes service account token is used to make a request to LiteLLM**:
 
-![Exec into a pod, cat its ServiceAccount JWT, curl LiteLLM with it, get a real 200 response](/litellm-sa-auth.gif)
+<picture>
+  <source media="(max-width: 640px)" srcset="/litellm-sa-auth-mobile.gif">
+  <img src="/litellm-sa-auth.gif" alt="Exec into a pod, cat its ServiceAccount JWT, curl LiteLLM with it, get a real 200 response">
+</picture>
 
-Do you see how there is no LiteLLM virtual key involved in the making of this request? Feel free to read the rest of the post to see why that is interesting.
+Do you see how there is no LiteLLM virtual key involved in the making of this request? Feel free to read the rest of the post if you find that interesting and want to know how it's done.
 
 ## AI Gateways Are Weird
 
